@@ -35,7 +35,7 @@ public:
     bool Find(T x, CBinTreeNode<T>**& p,stack<CBinTreeNode<T>**> &s);
     bool Ins(T x);
     bool Rem(T x);
-    CBinTreeNode<T>** Rep(CBinTreeNode<T>** p);
+    CBinTreeNode<T>** Rep(CBinTreeNode<T>** p,stack<Node **> &path);
     void InOrder(CBinTreeNode<T>* n);
     void PreOrder(CBinTreeNode<T>* n);
     void PosOrder(CBinTreeNode<T>* n);
@@ -45,7 +45,7 @@ public:
     void Print();
     //AVL
     int getFactor(Node *);
-    void Balance(Node **p, stack<Node **> &s);
+    void Balance( stack<Node **> &s);
     void RightRight(CBinTreeNode<T> **&);
     void LeftLeft(Node **&p);
     void LeftRight(Node **&p);
@@ -142,7 +142,7 @@ int CBinTree<T>::getFactor(Node *n){
 }
 
 template <class T>
-void CBinTree<T>::Balance(Node **n,stack<Node**> &path){
+void CBinTree<T>::Balance(stack<Node**> &path){
 
     // traverse until an unbalanced subtree is found
     for ( ; !path.empty() && abs(getFactor(*path.top())) != 2  ; path.pop());
@@ -152,11 +152,32 @@ void CBinTree<T>::Balance(Node **n,stack<Node**> &path){
     int factorBalance = getFactor(*root);;
 
     //rotate
-    if( factorBalance == -2 && (*n)->value > (*root)->nodes[1]->value) RightRight(root);
-    else if( factorBalance == -2 && (*n)->value < (*root)->nodes[1]->value) RightLeft(root);
-    else if( factorBalance == 2 && (*n)->value < (*root)->nodes[0]->value) LeftLeft(root);
-    else if( factorBalance == 2 && (*n)->value > (*root)->nodes[0]->value) LeftRight(root);
+    if( factorBalance == -2 && getFactor((*root)->nodes[1]) < 0)
+        RightRight(root);
+    else if( factorBalance == -2 && getFactor((*root)->nodes[1]) > 0)
+        RightLeft(root);
+    else if( factorBalance == 2 && getFactor((*root)->nodes[0]) > 0)
+        LeftLeft(root);
+    else if( factorBalance == 2 && getFactor((*root)->nodes[0]) < 0)
+        LeftRight(root);
 }
+
+//template <class T>
+//void CBinTree<T>::Balance(Node **n,stack<Node**> &path){
+//
+//    // traverse until an unbalanced subtree is found
+//    for ( ; !path.empty() && abs(getFactor(*path.top())) != 2  ; path.pop());
+//    if(path.empty()) return;
+//
+//    Node** root = path.top();
+//    int factorBalance = getFactor(*root);;
+//
+//    //rotate
+//    if( factorBalance == -2 && (*n)->value > (*root)->nodes[1]->value) RightRight(root);
+//    else if( factorBalance == -2 && (*n)->value < (*root)->nodes[1]->value) RightLeft(root);
+//    else if( factorBalance == 2 && (*n)->value < (*root)->nodes[0]->value) LeftLeft(root);
+//    else if( factorBalance == 2 && (*n)->value > (*root)->nodes[0]->value) LeftRight(root);
+//}
 
 
 //----------- E N D  B A L A N C E ----------------------//
@@ -178,7 +199,7 @@ bool CBinTree<T>::Ins(T x)
     if ( Find(x,p,path) ) return 0;
     *p = new CBinTreeNode<T>(x);
     size++;
-    Balance(p,path);
+    Balance(path);
     return 1;
 }
 
@@ -190,30 +211,24 @@ bool CBinTree<T>::Rem(T x)
     if ( !Find(x,p,path) ) return 0;
     if ( (*p)->nodes[0] && (*p)->nodes[1] )
     {
-        CBinTreeNode<T>** q = Rep(p);
+        CBinTreeNode<T>** q = Rep(p,path);
         (*p)->value = (*q)->value;
         p = q;
     }
     CBinTreeNode<T>* t = *p;
     *p = (*p)->nodes[ (*p)->nodes[1] != 0 ];
     delete t;
-    //balance
-    if(path.empty()) return 1;
-
-    if( !*p){
-        p = path.top();
-    }
     size--;
-    Balance(p,path);
+    Balance(path);
     return 1;
 }
 
 template <class T>
-CBinTreeNode<T>** CBinTree<T>::Rep(CBinTreeNode<T>** p)
+CBinTreeNode<T>** CBinTree<T>::Rep(CBinTreeNode<T>** p,stack<Node **> &path)
 {
     CBinTreeNode<T>** q;
     for ( q = &(*p)->nodes[!brep];(*q)->nodes[brep];q = &(*q)->nodes[brep] ){
-       //
+       path.push(q);
     }
     brep = !brep;
     return q;
@@ -320,9 +335,23 @@ int main()
     vector<int> vec = {14,17,11,7,53,4,13,12,8,60,19,16,20};
     for (int i = 0; i <vec.size() ; ++i) t.Ins(vec[i]);
 
+//    t.Rem(8);
+//    t.Rem(7);
+
+
+    t.PrintNiveles();
+
     t.Rem(8);
     t.Rem(7);
+    t.Rem(11);
+    t.Rem(14);
+    t.Rem(17);
+    t.PrintNiveles();
     t.Rem(4);
+    t.Rem(19);
+    t.Rem(16);
+    t.Rem(12);
+    t.Rem(13);
 
     t.PrintNiveles();
 

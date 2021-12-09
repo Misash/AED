@@ -7,13 +7,8 @@
 #include <vector>
 #include<list>
 #include <thread>
-#include <chrono>
-
-
 
 using namespace std;
-using namespace std::chrono;
-
 
 /*----------- GENERAL GRAPH  ------------*/
 template<class G>
@@ -134,7 +129,6 @@ public:
 
     void init(){
         init_matrix();
-//        init_Unvisited();
     }
 
     bool insArista(N a,N b,E e ,bool dir=1){
@@ -249,21 +243,38 @@ public:
     }
 
     void F1( dequeIter it , int n){
-//        m.lock();
         for (auto i = it ; i != it+n ; ++i)
             Dijkstra(*i);
-//        m.unlock();
     }
 
-    void printPAthof(){
+    void printMatrixDistancias(){
+        cout<<endl;
+        for (int i = 0; i < matrix.size(); ++i) {
+            for (int j = 0; j < matrix.size(); ++j) {
+                cout<<matrix[i][j].distance<<"\t";
+            }
+            cout<<endl;
+        }
+    }
 
+    void printDistanciasCaminos(){
+        cout<<"\nNodos  -  Distancia  - Caminos";
+        for (int i = 0; i < matrix.size(); ++i) {
+            for (int j = 0; j < matrix.size(); ++j) {
+                cout<<"\n"<<nodes[i]->value<<" - "<<nodes[j]->value<<" |\t\t "<<matrix[i][j].distance<<" :\t";
+                for (auto it = matrix[i][j].path.begin() ; it != matrix[i][j].path.end() ; it++) {
+                    cout<<" -> "<<(*it)->value;
+                }
+            }
+            cout<<endl;
+        }
     }
 
 
     void precalculo(){
 
         init();
-/* ------------------- T H R E A D S ----------------------*/
+        /* ------------------- T H R E A D S ----------------------*/
         //numero de threads a utilizar
         int nt = thread::hardware_concurrency();
         if( matrix.size() < nt ) nt = matrix.size();
@@ -283,43 +294,10 @@ public:
         //parte secuencial
         completePath();
 
-/* ------------------- T H R E A D S--------------------*/
-
-
-//        print();
-        cout<<"\n\n-----INFO----------\n\n";
-
-//        cout<<"\nnodos: ";
-        for (int i = 0; i <nodes.size() ; ++i) {
-            cout<<nodes[i]->value<<"\t";
-        }
-
-        cout<<"\n-------------------\n";
-        for (int i = 0; i < matrix.size(); ++i) {
-            for (int j = 0; j < matrix.size(); ++j) {
-                cout<<matrix[i][j].distance<<"\t";
-//                cout<<matrix[i][j].prev<<"\t";
-            }
-            cout<<endl;
-        }
-
-        cout<<"\n\n----- PATH ----------\n\n";
-        for (int i = 0; i < matrix.size(); ++i) {
-            for (int j = 0; j < matrix.size(); ++j) {
-                cout<<"\n"<<nodes[i]->value<<" - "<<nodes[j]->value<<" : ";
-                for (auto it = matrix[i][j].path.begin() ; it != matrix[i][j].path.end() ; it++) {
-                    cout<<" -> "<<(*it)->value;
-                }
-            }
-            cout<<endl;
-        }
-
-
-
+        /* ------------------- T H R E A D S--------------------*/
     }
 
     vector<vector<Dictionary<G>>> matrix;
-//    vector<Node*> unvisited;
 };
 
 /*----------- END PARTICULAR GRAPH CLASS ------------*/
@@ -329,6 +307,23 @@ public:
 int main()
 {
 
+    /**
+     *      PREPROCESADO DE GRAFO
+     *
+     * EL programa hace un precalculo de la distancia
+     * y camino mas corto del grafo, para esto se  utiliza el algoritmo
+     * de Dijkstra , ademas se usa threads para que este programa sea
+     * escalable  , el programa utiliza todos threads del computador y
+     *  dividiendolos de la manera mas pareja posible asignando una cantidad
+     *  de nodos a cada thread
+     *
+     *  FEATURES:
+     *   - calcular la distancia y camino mas corto entre dos nodos
+     *   - imprimir la matriz de distanias
+     *   - imprimir la distancia y camino de todo el grafo
+     *
+     */
+
    myGrafo g;
 
   g.insNodo(5);
@@ -336,7 +331,6 @@ int main()
   g.insNodo(2);
   g.insNodo(3);
   g.insNodo(1);
-
 
   g.insArista(1,5,10);
   g.insArista(1,2,2);
@@ -353,23 +347,41 @@ int main()
     bool play = 1;
     while(play){
 
-        int a,b;
+        int op;
 
-        cout << "\n\t** CAMINO MAS CORTO **";
-        cout << "\n\nIngresa el nodo de partida > "; cin>>a;
-        cout << "\nIngresa el nodo de llegada > "; cin>>b;
+        do{
+            cout<<"\n\n\t** PREPROCESADO DE GRAFO **";
+            cout<<"\n\n1.Calcular camino mas corto entre dos nodos";
+            cout<<"\n2.Imprimir matriz de distancias";
+            cout<<"\n3.Imprimir distancias y caminos mas cortos del grafo";
+            cout<<"\n4.Salir";
+            cout<<"\n\nseleciona una opcion > "; cin>>op;
+        }while(op < 1 || op > 4);
 
+        cin.ignore();
+        Dictionary<CGraph<int,int>> data;
+        switch (op) {
+            case 1:
+                int a,b;
+                cout<<"\nIngrese el nodo de partida y llegada: "; cin>>a>>b;
+                 data = g.matrix[g.index_of(a)][g.index_of(b)];
+                cout<<"\nDistancia : "<<data.distance;
+                if(data.distance == -1) break;
+                cout<<"\nPath : ";
+                for (auto it = data.path.begin() ; it != data.path.end() ; it++)
+                    cout<<" -> "<<(*it)->value;
+                break;
+            case 2:
+                cout<<"\n-- MATRIZ DE DISTANCIAS --\n";
+                g.printMatrixDistancias();
+                break;
+            case 3:
+                cout<<"\n--DISTANCIAS Y  CAMINOS MAS CORTOS --\n";
+                g.printDistanciasCaminos();
+                break;
 
-        Dictionary<CGraph<int,int>> data = g.matrix[g.index_of(a)][g.index_of(b)];
-
-        cout<<"\nDistancia : "<<data.distance;
-        cout<<"\nPath : ";
-        for (auto it = data.path.begin() ; it != data.path.end() ; it++)
-            cout<<" -> "<<(*it)->value;
-
-
-        cout<<"\nSalir (1/0)";
-        cin>>play;
+            default: play = 0; break;
+        }
     }
 
 
