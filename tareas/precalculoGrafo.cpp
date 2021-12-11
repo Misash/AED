@@ -46,16 +46,16 @@ public:
     typedef CEdge<G>        Edge;
     typedef   _N            N;
     typedef   _E            E;
-    typedef typename std::deque<Node*>::iterator dequeIter;
-    typedef typename std::list<Edge*>::iterator listIter;
+    typedef typename std::deque<Node*>::iterator dIter;
+    typedef typename std::list<Edge*>::iterator lIter;
 
-    bool FindNode(N x ,dequeIter &it){
+    bool FindNode(N x , dIter &it){
         for (it = nodes.begin();it != nodes.end() ; it++)
             if ((*it)->value == x) return 1;
         return 0;
     }
 
-    bool FindEdge(Node* a, Node* b, E e , listIter &it ,bool d=1  ){
+    bool FindEdge(Node* a, Node* b, E e , lIter &it , bool d=1  ){
         if(!a || !b) return 0;
         for (it = a->edges.begin() ; it != a->edges.end() ; it++) {
             bool verify = ((*it)->nodes[0] == a && (*it)->nodes[1] == b); // ->
@@ -66,7 +66,7 @@ public:
     }
 
     bool InsNode(N data){
-        dequeIter it;
+        dIter it;
         if(FindNode(data,it)) return 0;
         Node* n = new Node(data);
         nodes.push_back(n);
@@ -82,7 +82,7 @@ public:
     }
 
     bool RemEdge(Node* a, Node* b, E e, bool dir=1){
-        listIter it[2];
+        lIter it[2];
         if(!FindEdge(a,b,e,it[0],dir) || !FindEdge(b,a,e,it[1],dir)) return 0;
         a->edges.erase(it[0]);
         b->edges.erase(it[1]);
@@ -91,9 +91,9 @@ public:
     }
 
     bool RemNode(N n){
-        dequeIter node;
+        dIter node;
         if(!FindNode(n,node)) return 0;
-        for (listIter it=(*node)->edges.begin(); it != (*node)->edges.end(); ++it)
+        for (lIter it=(*node)->edges.begin(); it != (*node)->edges.end(); ++it)
             RemEdge((*it)->nodes[0],(*it)->nodes[1],(*it)->value,(*it)->dir);
         nodes.erase(node);
         return 1;
@@ -127,12 +127,12 @@ class myGrafo : public CGraph<int,int>
 
 public:
 
-    void init(){
+    void initializeValues(){
         init_matrix();
     }
 
     bool insArista(N a,N b,E e ,bool dir=1){
-        dequeIter it[2];
+        dIter it[2];
         if(!FindNode(a,it[0]) || !FindNode(b,it[1])) return 0;
         InsEdge(*it[0],*it[1],e,dir);
         return 1;
@@ -144,8 +144,8 @@ public:
 
     void print(){
         cout<<"\nprint:";
-        for ( dequeIter n = nodes.begin() ; n != nodes.end() ; ++n) {
-            for (listIter e = (*n)->edges.begin() ; e != (*n)->edges.end() ; e++) {
+        for (dIter n = nodes.begin() ; n != nodes.end() ; ++n) {
+            for (lIter e = (*n)->edges.begin() ; e != (*n)->edges.end() ; e++) {
                 Node * b = (*e)->nodes[1];
                 if( (*e)->dir  && (*e)->nodes[0] == *n )
                     cout<<"\n|"<<(*n)->value<<"| - "<<(*e)->value<<" -> |"<<b->value<<"|";
@@ -154,13 +154,13 @@ public:
     }
     /*-----------------  DIJKSTRA ------------------------*/
 
-    int indexOf(Node *n){
-        for (dequeIter it = nodes.begin(); it != nodes.end() ; ++it)
+    int getIndex(Node *n){
+        for (dIter it = nodes.begin(); it != nodes.end() ; ++it)
             if((*it) == n) return it-nodes.begin();
     }
 
     int index_of(N x){
-        for (dequeIter it = nodes.begin(); it != nodes.end() ; ++it)
+        for (dIter it = nodes.begin(); it != nodes.end() ; ++it)
             if((*it)->value == x) return it-nodes.begin();
     }
 
@@ -174,10 +174,10 @@ public:
     }
 
     void updateDistances(Node *n,int i){
-        for (listIter edge_ptr = n->edges.begin() ; edge_ptr != n->edges.end() ; edge_ptr ++) {
+        for (lIter edge_ptr = n->edges.begin() ; edge_ptr != n->edges.end() ; edge_ptr ++) {
             if( (*edge_ptr)->dir && (*edge_ptr)->nodes[0] == n ){
-                int j = indexOf((*edge_ptr)->nodes[0]);
-                int k = indexOf((*edge_ptr)->nodes[1]);
+                int j = getIndex((*edge_ptr)->nodes[0]);
+                int k = getIndex((*edge_ptr)->nodes[1]);
                 int u = matrix[i][j].distance;
                 int uv = (*edge_ptr)->value;
                 int v = matrix[i][k].distance;
@@ -204,13 +204,13 @@ public:
     void find_Min_Unvisited(int row ,Node *&n,int &min,vector<Node*> &unvisited){
         vector<Node*>::iterator it;
         for (it = unvisited.begin() ; it != unvisited.end() ; it ++){
-            if ( matrix[row][indexOf(*it)].distance != -1 ){
-                min = matrix[row][indexOf(*it)].distance; break;
+            if (matrix[row][getIndex(*it)].distance != -1 ){
+                min = matrix[row][getIndex(*it)].distance; break;
             }
         }
         if(min == -1) return;
         for (it = unvisited.begin() ; it != unvisited.end() ; it ++){
-            int d = matrix[row][indexOf(*it)].distance;
+            int d = matrix[row][getIndex(*it)].distance;
             if( ( d != -1 ) && ( d <= min )){
                 min = d;
                 n = *it;
@@ -231,7 +231,7 @@ public:
         vector<Node*> unvisited;
         init_Unvisited(unvisited);
 
-        int row = indexOf(n);
+        int row = getIndex(n);
         int min = 0;
         matrix[row][row].distance = 0;
         while( min != -1 && unvisited.size()){
@@ -242,7 +242,7 @@ public:
         }
     }
 
-    void F1( dequeIter it , int n){
+    void F1(dIter it , int n){
         for (auto i = it ; i != it+n ; ++i)
             Dijkstra(*i);
     }
@@ -273,7 +273,7 @@ public:
 
     void precalculo(){
 
-        init();
+        initializeValues();
         /* ------------------- T H R E A D S ----------------------*/
         //numero de threads a utilizar
         int nt = thread::hardware_concurrency();

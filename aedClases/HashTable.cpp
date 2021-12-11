@@ -90,9 +90,6 @@ bool CHashTable<T,S,Fd,Sz>::rem(T v)
 
 
 
-
-
-
 int main()
 {
     CHashTable<int, CListAdaptor<int>, CFd1, 7> ht;

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 using namespace std;
 
 // Estructura de datos para almacenar nodos de lista de adyacencia
@@ -15,6 +16,8 @@ struct Edge {
 
 class Graph
 {
+
+public:
 	// Función para asignar un nuevo nodo para la lista de adyacencia
 	Node* getAdjListNode(int dest, Node* head)
 	{
@@ -29,7 +32,7 @@ class Graph
 
 	int N;	// número total de nodos en el grafo
 
-public:
+
 
 	// Una array de punteros al nodo para representar la
 	// lista de adyacencia
@@ -78,28 +81,107 @@ public:
 		delete[] head;
 	}
 
+    int NumeroEdges(Node** n){
+        int count=0;
+        for (Node * i = *n; i ; i = i->next) {
+            count++;
+        }
+        return count;
+    }
+
+    bool isvalidEdge(Node **v,Node *av){
+        //av is unique adjacent vertex
+        if(NumeroEdges(v) == 1) return 1;
+        if(NumeroEdges(v) > 1 && NumeroEdges(&head[av->val]) != 1){
+            //multiple vertex and not bridge ( mean has just one edge )
+            return 1;
+        }
+        return 0;
+    }
+
+    void removeEdge(Node **v ,Node* av){
+        if(!*v || !av) return;
+        int i_init = v - &head[0];
+        int i_final = av->val;
+
+        //borrar del initializeValues
+        for (Node **i = &head[i_init]; *i ; i = &(*i)->next) {
+            if((*i)->val == av->val){
+                Node *t = *i;
+                *i = (*i)->next;
+                t = 0;
+                break;
+            }
+        }
+        //borrar del final
+        for (Node **i = &head[i_final]; *i ; i = &(*i)->next) {
+            if((*i)->val == i_init){
+                Node *t = *i;
+                *i= (*i)->next;
+                t = 0;
+                break;
+            }
+        }
+    }
+
+    void printEulerPath(Node **v){
+
+        for (Node *av = *v; av ; av = av->next) {
+            if( isvalidEdge(v,av)){
+//                cout<<"\n N: "<<av->val<<" \n";
+                cout<<" ("<<v - &head[0]<<" - "<<av->val<<") ";
+                int index = av->val;
+                removeEdge(v,av);
+//                for (int i = 0; i < N; i++){
+//                    cout << i << " --";
+//                    printList(head[i]);
+//                }
+//                cout<<endl;
+
+                printEulerPath(&head[index]);
+            }
+        }
+    }
+
+
+    void printTravelEdge(int index)
+    {
+
+        printEulerPath(&head[index]);
+
+    }
+
+    void printList(Node* ptr)
+    {
+        while (ptr != nullptr)
+        {
+            cout << " -> " << ptr->val << " ";
+            ptr = ptr->next;
+        }
+        cout << endl;
+    }
+
+    void init(Edge edges[], int n, int N){
+        Graph(edges,n,N);
+    }
 
 };
 
 // Función para imprimir todos los vértices vecinos de un vértice dado
-void printList(Node* ptr)
-{
-	while (ptr != nullptr)
-	{
-		cout << " -> " << ptr->val << " ";
-		ptr = ptr->next;
-	}
-	cout << endl;
-}
+
 
 // Halla todos los recorridos desde el nodo ptr que recorra
 // todas las aristas del grafo, sin repetir una arista
 // se puede pasar por un nodo mas de una vez
-void printTravelEdge(Node* ptr)
-{
-	// RESOLVER 
-	cout << " Imprimir recorridos AQUI " << endl;
-}
+
+
+
+
+
+
+
+
+
 
 // Implementación de grafos
 int main()
@@ -120,25 +202,34 @@ int main()
 	// construir grafo
 	Graph graph(edges, n, N);
 
-	// imprimir la representación de la lista de adyacencia de un grafo
-	for (int i = 0; i < N; i++)
-	{
-		// imprimir el vértice dado
-		cout << i << " --";
 
-		// imprime todos sus vértices vecinos
-		printList(graph.head[i]);
-	}
+    // imprimir la representación de la lista de adyacencia de un grafo
+    for (int i = 0; i < N; i++)
+    {
+        // imprimir el vértice dado
+        cout << i << " --";
+
+        // imprime todos sus vértices vecinos
+        graph.printList(graph.head[i]);
+
+    }
+
+
+//    graph.removeEdge(&graph.head[0],graph.head[0]);
+
+
 
 	//prueba de recorridos de aristas
 	for (int i = 0; i < N; i++)
 	{
 		// imprimir el vértice de inicio
-		cout << "Partiendo del nodo " << i << endl;
+		cout << "\nPartiendo del nodo " << i << endl;
 
 		// imprime el recorrido de todas las aristas sin repetir
-		printTravelEdge(graph.head[i]);
+        graph.printTravelEdge(i);
+        graph.init(edges, n, N);
 	}
+
 
 	return 0;
 }

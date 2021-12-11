@@ -38,16 +38,16 @@ public:
     typedef CEdge<G>        Edge;
     typedef   _N            N;
     typedef   _E            E;
-    typedef typename std::deque<Node*>::iterator dequeIter;
-    typedef typename std::list<Edge*>::iterator listIter;
+    typedef typename std::deque<Node*>::iterator dIter;
+    typedef typename std::list<Edge*>::iterator lIter;
 
-    bool FindNode(N x ,dequeIter &it){
+    bool FindNode(N x , dIter &it){
         for (it = nodes.begin();it != nodes.end() ; it++)
             if ((*it)->value == x) return 1;
         return 0;
     }
 
-    bool FindEdge(Node* a, Node* b, E e , listIter &it ,bool d=1  ){
+    bool FindEdge(Node* a, Node* b, E e , lIter &it , bool d=1  ){
         if(!a || !b) return 0;
         for (it = a->edges.begin() ; it != a->edges.end() ; it++) {
             bool verify = ((*it)->nodes[0] == a && (*it)->nodes[1] == b); // ->
@@ -58,7 +58,7 @@ public:
     }
 
     bool InsNode(N data){
-        dequeIter it;
+        dIter it;
         if(FindNode(data,it)) return 0;
         Node* n = new Node(data);
         nodes.push_back(n);
@@ -74,7 +74,7 @@ public:
     }
 
     bool RemEdge(Node* a, Node* b, E e, bool dir=1){
-        listIter it[2];
+        lIter it[2];
         if(!FindEdge(a,b,e,it[0],dir) || !FindEdge(b,a,e,it[1],dir)) return 0;
         a->edges.erase(it[0]);
         b->edges.erase(it[1]);
@@ -83,9 +83,9 @@ public:
     }
 
     bool RemNode(N n){
-        dequeIter node;
+        dIter node;
         if(!FindNode(n,node)) return 0;
-        for (listIter it=(*node)->edges.begin(); it != (*node)->edges.end(); ++it)
+        for (lIter it=(*node)->edges.begin(); it != (*node)->edges.end(); ++it)
             RemEdge((*it)->nodes[0],(*it)->nodes[1],(*it)->value,(*it)->dir);
         nodes.erase(node);
         return 1;
@@ -93,8 +93,8 @@ public:
 
     void Print(){
         cout<<"\nprint:";
-        for ( dequeIter n = nodes.begin() ; n != nodes.end() ; ++n) {
-            for (listIter e = (*n)->edges.begin() ; e != (*n)->edges.end() ; e++) {
+        for (dIter n = nodes.begin() ; n != nodes.end() ; ++n) {
+            for (lIter e = (*n)->edges.begin() ; e != (*n)->edges.end() ; e++) {
                 Node * b = (*e)->nodes[1];
                 if( (*e)->dir  && (*e)->nodes[0] == *n ){
                     cout<<"\n"<<(*n)->value<<" -> "<<(*e)->value<<" "<<b->value;
