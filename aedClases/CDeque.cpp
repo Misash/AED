@@ -89,24 +89,14 @@ public:
 
     void push_back(O x)
     {
-        //accedemos al last del map
-
         chunk<O> * last_chunk = *(map->init + map->size - 1);
-//            chunk<int> * last_chunk = *(map->init);
 
-        //verificar que se puede push en el chunk
        if( (last_chunk ->init + last_chunk->size ) <= last_chunk->tail){
-
            last_chunk->push_back(x);
-
        } else if ( (map->init + map->size - 1 ) == map->tail){
-           // verificar si esta en el  ultimo map y el ultimo chunk
-
            expand();
            this->push_back(x);
-
        }else{
-           // si no esta en el ultimo  pero se necesita otro chunk
            createChunk(*(map->init + map->size),0);
            last_chunk = *(map->init + map->size -1);
            last_chunk->push_back(x);
@@ -118,20 +108,12 @@ public:
 
         chunk<O> * firts_chunk = *(map->init);
 
-        //verificar que se puede push en el chunk
         if(firts_chunk->init > firts_chunk->head){
-
             firts_chunk->push_front(x);
-
         } else if ( map->init == map->head){
-            // verificar si esta en el  ultimo map y el ultimo chunk
-
             expand();
-            // un push back
             this->push_front(x);
-
         }else{
-            // si no esta en el ultimo  pero se necesita otro chunk
             map->init --;
             createChunk(*(map->init ),size_chunk-1);
             firts_chunk = *(map->init);
@@ -141,13 +123,9 @@ public:
     }
 
     void pop_back(){
-
         collapse();
-
         chunk<O> * last_chunk = *(map->init + map->size - 1);
-
         if(last_chunk->size){
-
             if(last_chunk->size == 1){
                 last_chunk->pop_back();
                 map->size -= (size()>1);
@@ -160,12 +138,9 @@ public:
     void pop_front(){
 
         collapse();
-
         chunk<O> * first_chunk = *(map->init);
-
         if(first_chunk->size ){
             if (first_chunk->size == 1){
-                //eliminar chunk si es el ultimo
                 first_chunk->pop_front();
                 map->init += (size()>1);
                 map->size -= (size()>1);
